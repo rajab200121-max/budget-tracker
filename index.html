@@ -4,76 +4,139 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Budget Tracker Premium</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
     body { background-color: #3193d9ff; padding: 20px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 450px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .container { width: 100%; max-width: 480px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
     h2 { text-align: center; margin-bottom: 20px; color: #333; }
 
+    /* SALDO */
     .saldo-box { background: #2ecc71; color: white; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px; }
-    .saldo-box.sering-jajan { background: #e74c3c; }
+    .saldo-box.minus { background: #e74c3c; }
     .saldo-box h3 { font-size: 28px; margin-top: 5px; }
-
     .detail-box { display: flex; gap: 10px; margin-bottom: 20px; }
     .sub-box { flex: 1; padding: 10px; border-radius: 8px; color: white; text-align: center; }
     .sub-box p { font-size: 12px; opacity: 0.9; }
-    .sub-box h5 { font-size: 16px; margin-top: 3px; }
-    .sub-box.plus { background-color: #2ecc71; }
-    .sub-box.minus { background-color: #e74c3c; }
+    .sub-box h5 { font-size: 15px; margin-top: 3px; }
+    .sub-box.plus { background: #2ecc71; }
+    .sub-box.minus { background: #e74c3c; }
 
-    .chart-container { width: 100%; max-width: 210px; margin: 0 auto 25px auto; }
+    /* GRAFIK */
+    .chart-container { width: 100%; max-width: 210px; margin: 0 auto 20px auto; }
 
-    .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    input, select, button { padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; outline: none; }
+    /* BUDGET LIMIT */
+    .budget-section { background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; padding: 14px; margin-bottom: 15px; }
+    .budget-section h4 { color: #f39c12; margin-bottom: 10px; font-size: 14px; }
+    .budget-grid { display: flex; flex-direction: column; gap: 8px; }
+    .budget-item { display: flex; align-items: center; gap: 8px; }
+    .budget-item label { font-size: 13px; color: #666; min-width: 90px; }
+    .budget-item input { flex: 1; padding: 7px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; outline: none; }
+    .budget-item input:focus { border-color: #f39c12; }
+    .btn-set-budget { background: #f39c12; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; width: 100%; margin-top: 6px; }
+    .progress-wrap { margin-top: 10px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 4px; }
+    .progress-bar { background: #eee; border-radius: 100px; height: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 100px; transition: width 0.4s; background: #2ecc71; }
+    .progress-fill.warn { background: #f39c12; }
+    .progress-fill.danger { background: #e74c3c; }
+
+    /* FORM */
+    .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+    input[type=text], input[type=number], input[type=date], select, button { padding: 11px 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; outline: none; width: 100%; }
     input:focus, select:focus { border-color: #2ecc71; }
-    button { background: #3498db; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    button:hover { opacity: 0.9; }
+    .btn-tambah { background: #3498db; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-tambah:hover { opacity: 0.9; }
 
-    /* FILTER TANGGAL */
-    .filter-section {
-      background: #f0f8ff;
-      border: 1px solid #d0e8ff;
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 20px;
-    }
+    /* KATEGORI CUSTOM */
+    .kategori-custom { background: #f0fff4; border: 1px solid #b2dfdb; border-radius: 10px; padding: 12px; margin-bottom: 15px; }
+    .kategori-custom h4 { color: #27ae60; font-size: 13px; margin-bottom: 8px; }
+    .kategori-row { display: flex; gap: 8px; }
+    .kategori-row input { flex: 1; padding: 8px 10px; font-size: 13px; }
+    .btn-tambah-kat { background: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; white-space: nowrap; width: auto; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .tag { background: #e8f5e9; color: #27ae60; padding: 4px 10px; border-radius: 100px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+    .tag .hapus-tag { cursor: pointer; color: #aaa; font-size: 13px; background: none; border: none; padding: 0; width: auto; }
+    .tag .hapus-tag:hover { color: #e74c3c; }
+
+    /* RINGKASAN */
+    .ringkasan-section { background: #f0f4ff; border: 1px solid #c5cae9; border-radius: 10px; padding: 14px; margin-bottom: 15px; }
+    .ringkasan-section h4 { color: #3f51b5; font-size: 14px; margin-bottom: 10px; }
+    .ringkasan-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+    .tab-btn { flex: 1; padding: 7px; border-radius: 8px; border: 1px solid #c5cae9; background: white; font-size: 12px; cursor: pointer; color: #666; font-weight: bold; }
+    .tab-btn.active { background: #3f51b5; color: white; border-color: #3f51b5; }
+    .ringkasan-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+    .ringkasan-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 8px; font-size: 13px; }
+    .ringkasan-item .label { color: #555; }
+    .ringkasan-item .nilai { font-weight: bold; }
+    .nilai.plus { color: #2ecc71; }
+    .nilai.minus { color: #e74c3c; }
+
+    /* FILTER */
+    .filter-section { background: #f0f8ff; border: 1px solid #d0e8ff; border-radius: 10px; padding: 14px; margin-bottom: 15px; }
     .filter-section h4 { color: #3498db; margin-bottom: 10px; font-size: 14px; }
     .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .filter-row label { font-size: 12px; color: #666; width: 100%; }
-    .filter-row input[type="date"] { flex: 1; padding: 8px 10px; font-size: 13px; }
-    .filter-row select { flex: 1; padding: 8px 10px; font-size: 13px; }
-    .btn-filter { background: #3498db; color: white; padding: 8px 14px; font-size: 13px; border-radius: 8px; border: none; cursor: pointer; white-space: nowrap; }
-    .btn-reset { background: #95a5a6; color: white; padding: 8px 14px; font-size: 13px; border-radius: 8px; border: none; cursor: pointer; white-space: nowrap; }
-    .filter-info { font-size: 12px; color: #888; margin-top: 8px; text-align: center; }
+    .filter-row input[type=date], .filter-row select { flex: 1; padding: 8px 10px; font-size: 13px; width: auto; }
+    .btn-filter { background: #3498db; color: white; padding: 8px 12px; font-size: 13px; border-radius: 8px; border: none; cursor: pointer; white-space: nowrap; width: auto; }
+    .btn-reset  { background: #95a5a6; color: white; padding: 8px 12px; font-size: 13px; border-radius: 8px; border: none; cursor: pointer; white-space: nowrap; width: auto; }
+    .filter-info { font-size: 12px; color: #888; margin-top: 6px; text-align: center; }
 
+    /* EXPORT */
+    .export-section { display: flex; gap: 8px; margin-bottom: 15px; }
+    .btn-pdf   { flex:1; background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; }
+    .btn-excel { flex:1; background: #27ae60; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; }
+    .btn-pdf:hover, .btn-excel:hover { opacity: 0.88; }
+
+    /* LIST */
     h4.riwayat-title { margin-bottom: 10px; color: #555; }
-    .list-transaksi { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .item-transaksi { display: flex; justify-content: space-between; padding: 12px; border-radius: 8px; background: #f9f9f9; border-left: 5px solid #2ecc71; }
+    .list-transaksi { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .item-transaksi { display: flex; justify-content: space-between; padding: 11px 12px; border-radius: 8px; background: #f9f9f9; border-left: 5px solid #2ecc71; }
     .item-transaksi.pengeluaran { border-left-color: #e74c3c; }
-    .hapus-btn { background: none; border: none; color: #aaa; cursor: pointer; font-weight: bold; padding: 0; }
+    .hapus-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; padding: 0; width: auto; }
     .hapus-btn:hover { color: #e74c3c; background: none; }
-
-    .empty-filter { text-align: center; padding: 20px; color: #aaa; font-size: 14px; }
+    .badge-kat { display: inline-block; background: #e8f5e9; color: #27ae60; font-size: 10px; padding: 2px 7px; border-radius: 100px; margin-top: 2px; }
+    .empty-state { text-align: center; padding: 20px; color: #aaa; font-size: 14px; }
   </style>
 </head>
 <body>
 <div class="container">
   <h2>Budget Tracker 💰</h2>
 
+  <!-- SALDO -->
   <div class="saldo-box" id="saldoBox">
     <p>Sisa Saldo Anda</p>
     <h3 id="totalSaldo">Rp 0</h3>
   </div>
-
   <div class="detail-box">
     <div class="sub-box plus"><p>Total Masuk</p><h5 id="totalMasuk">Rp 0</h5></div>
     <div class="sub-box minus"><p>Total Keluar</p><h5 id="totalKeluar">Rp 0</h5></div>
   </div>
 
-  <div class="chart-container">
-    <canvas id="grafikKeuangan"></canvas>
+  <!-- GRAFIK -->
+  <div class="chart-container"><canvas id="grafikKeuangan"></canvas></div>
+
+  <!-- BATAS BUDGET -->
+  <div class="budget-section">
+    <h4>⚠️ Batas Budget</h4>
+    <div class="budget-grid">
+      <div class="budget-item">
+        <label>Per Bulan (Rp)</label>
+        <input type="number" id="budgetBulan" placeholder="Contoh: 2000000" />
+      </div>
+      <div class="budget-item">
+        <label>Per Kategori</label>
+        <select id="budgetKatPilih"></select>
+        <input type="number" id="budgetKatNominal" placeholder="Nominal" style="margin-left:6px;" />
+      </div>
+    </div>
+    <button class="btn-set-budget" onclick="simpanBudget()">💾 Simpan Batas Budget</button>
+    <div id="progressBudget"></div>
   </div>
 
+  <!-- FORM INPUT -->
   <div class="form-group">
     <input type="text" id="namaTransaksi" placeholder="Contoh: Gaji, Beli Kopi..." />
     <input type="number" id="jumlahUang" placeholder="Jumlah Uang (Rp)..." />
@@ -81,71 +144,178 @@
       <option value="pemasukan">Pemasukan (+)</option>
       <option value="pengeluaran">Pengeluaran (-)</option>
     </select>
-    <button onclick="tambahTransaksi()">Catat Transaksi</button>
+    <select id="kategoriTransaksi"></select>
+    <button class="btn-tambah" onclick="tambahTransaksi()">+ Catat Transaksi</button>
   </div>
 
-  <!-- FILTER TANGGAL -->
+  <!-- KATEGORI CUSTOM -->
+  <div class="kategori-custom">
+    <h4>🏷️ Kelola Kategori</h4>
+    <div class="kategori-row">
+      <input type="text" id="inputKategori" placeholder="Nama kategori baru..." />
+      <button class="btn-tambah-kat" onclick="tambahKategori()">+ Tambah</button>
+    </div>
+    <div class="tags" id="tagsKategori"></div>
+  </div>
+
+  <!-- RINGKASAN -->
+  <div class="ringkasan-section">
+    <h4>📊 Ringkasan</h4>
+    <div class="ringkasan-tabs">
+      <button class="tab-btn active" id="tab-bulan" onclick="setTab('bulan')">Per Bulan</button>
+      <button class="tab-btn" id="tab-kategori" onclick="setTab('kategori')">Per Kategori</button>
+    </div>
+    <div class="ringkasan-list" id="ringkasanList"></div>
+  </div>
+
+  <!-- FILTER -->
   <div class="filter-section">
     <h4>🔍 Filter Riwayat</h4>
     <div class="filter-row">
-      <label>Rentang Tanggal</label>
       <input type="date" id="filterDari" />
-      <span style="font-size:13px;color:#888;align-self:center;">s/d</span>
+      <span style="font-size:13px;color:#888;">s/d</span>
       <input type="date" id="filterSampai" />
     </div>
     <div class="filter-row" style="margin-top:8px;">
-      <label>Jenis Transaksi</label>
-      <select id="filterJenis">
-        <option value="semua">Semua</option>
-        <option value="pemasukan">Pemasukan saja</option>
-        <option value="pengeluaran">Pengeluaran saja</option>
+      <select id="filterJenis" style="flex:1;">
+        <option value="semua">Semua Jenis</option>
+        <option value="pemasukan">Pemasukan</option>
+        <option value="pengeluaran">Pengeluaran</option>
       </select>
+      <select id="filterKategori" style="flex:1;"></select>
       <button class="btn-filter" onclick="terapkanFilter()">Terapkan</button>
-      <button class="btn-reset" onclick="resetFilter()">Reset</button>
+      <button class="btn-reset"  onclick="resetFilter()">Reset</button>
     </div>
     <div class="filter-info" id="filterInfo"></div>
   </div>
 
+  <!-- EXPORT -->
+  <div class="export-section">
+    <button class="btn-pdf"   onclick="exportPDF()">📄 Export PDF</button>
+    <button class="btn-excel" onclick="exportExcel()">📊 Export Excel</button>
+  </div>
+
+  <!-- RIWAYAT -->
   <h4 class="riwayat-title">Riwayat Keuangan</h4>
   <ul class="list-transaksi" id="riwayatList"></ul>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+  // ── STATE ──
   let dataKeuangan = JSON.parse(localStorage.getItem('dataKeuanganLocal')) || [];
+  let kategoriList = JSON.parse(localStorage.getItem('kategoriList')) || ['Makan','Transport','Gaji','Belanja','Hiburan','Lainnya'];
+  let budgetData   = JSON.parse(localStorage.getItem('budgetData'))   || { bulan: 0, kategori: {} };
+  let filterAktif  = { dari:'', sampai:'', jenis:'semua', kategori:'semua' };
+  let tabAktif     = 'bulan';
   let dompetChart;
-  let filterAktif = { dari: '', sampai: '', jenis: 'semua' };
 
-  function buatGrafikAwal() {
+  // ── INIT ──
+  buatGrafik();
+  renderKategori();
+  hitungDanRender();
+
+  // ── GRAFIK ──
+  function buatGrafik() {
     const ctx = document.getElementById('grafikKeuangan').getContext('2d');
     dompetChart = new Chart(ctx, {
       type: 'doughnut',
-      data: {
-        labels: ['Total Masuk', 'Total Keluar'],
-        datasets: [{ data: [0, 0], backgroundColor: ['#2ecc71', '#e74c3c'], borderWidth: 2 }]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      data: { labels:['Total Masuk','Total Keluar'], datasets:[{ data:[0,0], backgroundColor:['#2ecc71','#e74c3c'], borderWidth:2 }] },
+      options: { responsive:true, plugins:{ legend:{ position:'bottom' } } }
     });
   }
 
-  buatGrafikAwal();
-  hitungDanRender();
+  // ── KATEGORI ──
+  function simpanKategori() { localStorage.setItem('kategoriList', JSON.stringify(kategoriList)); }
 
+  function renderKategori() {
+    const opts = kategoriList.map(k => `<option value="${k}">${k}</option>`).join('');
+    document.getElementById('kategoriTransaksi').innerHTML = opts;
+    document.getElementById('budgetKatPilih').innerHTML    = opts;
+    document.getElementById('filterKategori').innerHTML    = `<option value="semua">Semua Kategori</option>` + opts;
+
+    const tags = document.getElementById('tagsKategori');
+    const defaultKat = ['Makan','Transport','Gaji','Belanja','Hiburan','Lainnya'];
+    tags.innerHTML = kategoriList.map(k => `
+      <span class="tag">${k}
+        ${!defaultKat.includes(k) ? `<button class="hapus-tag" onclick="hapusKategori('${k}')">×</button>` : ''}
+      </span>`).join('');
+  }
+
+  function tambahKategori() {
+    const val = document.getElementById('inputKategori').value.trim();
+    if (!val || kategoriList.includes(val)) { alert('Kategori sudah ada atau kosong!'); return; }
+    kategoriList.push(val);
+    simpanKategori();
+    renderKategori();
+    document.getElementById('inputKategori').value = '';
+  }
+
+  function hapusKategori(nama) {
+    kategoriList = kategoriList.filter(k => k !== nama);
+    simpanKategori();
+    renderKategori();
+  }
+
+  // ── BUDGET ──
+  function simpanBudget() {
+    const bulan = parseFloat(document.getElementById('budgetBulan').value) || 0;
+    const kat   = document.getElementById('budgetKatPilih').value;
+    const nom   = parseFloat(document.getElementById('budgetKatNominal').value) || 0;
+    budgetData.bulan = bulan;
+    if (kat && nom > 0) budgetData.kategori[kat] = nom;
+    localStorage.setItem('budgetData', JSON.stringify(budgetData));
+    document.getElementById('budgetBulan').value      = '';
+    document.getElementById('budgetKatNominal').value = '';
+    hitungDanRender();
+    alert('✅ Batas budget disimpan!');
+  }
+
+  function renderProgressBudget(totalPengeluaranBulanIni, pengeluaranPerKat) {
+    let html = '';
+
+    if (budgetData.bulan > 0) {
+      const pct = Math.min(Math.round((totalPengeluaranBulanIni / budgetData.bulan) * 100), 100);
+      const cls = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : '';
+      html += `
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Pengeluaran Bulan Ini</span><span>${pct}% dari Rp ${budgetData.bulan.toLocaleString('id-ID')}</span></div>
+          <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>
+          ${pct >= 90 ? '<p style="color:#e74c3c;font-size:11px;margin-top:4px;">⚠️ Hampir melebihi batas budget!</p>' : ''}
+        </div>`;
+    }
+
+    Object.entries(budgetData.kategori).forEach(([kat, limit]) => {
+      const used = pengeluaranPerKat[kat] || 0;
+      const pct  = Math.min(Math.round((used / limit) * 100), 100);
+      const cls  = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : '';
+      html += `
+        <div class="progress-wrap">
+          <div class="progress-label"><span>${kat}</span><span>${pct}% dari Rp ${limit.toLocaleString('id-ID')}</span></div>
+          <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>
+        </div>`;
+    });
+
+    document.getElementById('progressBudget').innerHTML = html;
+  }
+
+  // ── TRANSAKSI ──
   function tambahTransaksi() {
-    const nama = document.getElementById('namaTransaksi').value.trim();
+    const nama   = document.getElementById('namaTransaksi').value.trim();
     const jumlah = parseFloat(document.getElementById('jumlahUang').value);
-    const jenis = document.getElementById('jenisTransaksi').value;
-    if (!nama || isNaN(jumlah) || jumlah <= 0) { alert("Mohon isi nama transaksi dan jumlah uang dengan benar! 😉"); return; }
+    const jenis  = document.getElementById('jenisTransaksi').value;
+    const kat    = document.getElementById('kategoriTransaksi').value;
+    if (!nama || isNaN(jumlah) || jumlah <= 0) { alert('Mohon isi nama dan jumlah dengan benar! 😉'); return; }
 
+    const now = new Date();
     dataKeuangan.push({
-      id: Date.now(), nama, jumlah, jenis,
-      tanggalISO: new Date().toISOString().split('T')[0],
-      tanggal: new Date().toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })
+      id: Date.now(), nama, jumlah, jenis, kategori: kat,
+      tanggalISO: now.toISOString().split('T')[0],
+      tanggal: now.toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })
     });
 
     localStorage.setItem('dataKeuanganLocal', JSON.stringify(dataKeuangan));
     document.getElementById('namaTransaksi').value = '';
-    document.getElementById('jumlahUang').value = '';
+    document.getElementById('jumlahUang').value    = '';
     hitungDanRender();
   }
 
@@ -155,80 +325,181 @@
     hitungDanRender();
   }
 
+  // ── FILTER ──
   function terapkanFilter() {
-    filterAktif.dari   = document.getElementById('filterDari').value;
-    filterAktif.sampai = document.getElementById('filterSampai').value;
-    filterAktif.jenis  = document.getElementById('filterJenis').value;
+    filterAktif.dari     = document.getElementById('filterDari').value;
+    filterAktif.sampai   = document.getElementById('filterSampai').value;
+    filterAktif.jenis    = document.getElementById('filterJenis').value;
+    filterAktif.kategori = document.getElementById('filterKategori').value;
     hitungDanRender();
   }
 
   function resetFilter() {
-    filterAktif = { dari: '', sampai: '', jenis: 'semua' };
-    document.getElementById('filterDari').value   = '';
-    document.getElementById('filterSampai').value = '';
-    document.getElementById('filterJenis').value  = 'semua';
+    filterAktif = { dari:'', sampai:'', jenis:'semua', kategori:'semua' };
+    document.getElementById('filterDari').value     = '';
+    document.getElementById('filterSampai').value   = '';
+    document.getElementById('filterJenis').value    = 'semua';
+    document.getElementById('filterKategori').value = 'semua';
     hitungDanRender();
   }
 
-  function dataYangDifilter() {
+  function dataFiltered() {
     return dataKeuangan.filter(t => {
       const tgl = t.tanggalISO || '';
-      if (filterAktif.dari   && tgl < filterAktif.dari)   return false;
-      if (filterAktif.sampai && tgl > filterAktif.sampai) return false;
-      if (filterAktif.jenis !== 'semua' && t.jenis !== filterAktif.jenis) return false;
+      if (filterAktif.dari     && tgl < filterAktif.dari)             return false;
+      if (filterAktif.sampai   && tgl > filterAktif.sampai)           return false;
+      if (filterAktif.jenis    !== 'semua' && t.jenis !== filterAktif.jenis) return false;
+      if (filterAktif.kategori !== 'semua' && t.kategori !== filterAktif.kategori) return false;
       return true;
     });
   }
 
+  // ── RINGKASAN ──
+  function setTab(tab) {
+    tabAktif = tab;
+    document.getElementById('tab-bulan').classList.toggle('active', tab==='bulan');
+    document.getElementById('tab-kategori').classList.toggle('active', tab==='kategori');
+    renderRingkasan();
+  }
+
+  function renderRingkasan() {
+    const el = document.getElementById('ringkasanList');
+    if (tabAktif === 'bulan') {
+      const perBulan = {};
+      dataKeuangan.forEach(t => {
+        const bln = (t.tanggalISO || '').substring(0, 7);
+        if (!bln) return;
+        if (!perBulan[bln]) perBulan[bln] = { masuk:0, keluar:0 };
+        if (t.jenis === 'pemasukan') perBulan[bln].masuk += t.jumlah;
+        else perBulan[bln].keluar += t.jumlah;
+      });
+      const sorted = Object.entries(perBulan).sort((a,b) => b[0].localeCompare(a[0]));
+      el.innerHTML = sorted.length ? sorted.map(([bln, v]) => {
+        const net = v.masuk - v.keluar;
+        const d = new Date(bln + '-01');
+        const label = d.toLocaleDateString('id-ID', { year:'numeric', month:'long' });
+        return `<div class="ringkasan-item">
+          <span class="label">📅 ${label}</span>
+          <span class="nilai ${net>=0?'plus':'minus'}">Rp ${Math.abs(net).toLocaleString('id-ID')} ${net>=0?'surplus':'defisit'}</span>
+        </div>`;
+      }).join('') : '<div class="empty-state">Belum ada data</div>';
+    } else {
+      const perKat = {};
+      dataKeuangan.filter(t => t.jenis==='pengeluaran').forEach(t => {
+        const k = t.kategori || 'Lainnya';
+        perKat[k] = (perKat[k] || 0) + t.jumlah;
+      });
+      const sorted = Object.entries(perKat).sort((a,b) => b[1]-a[1]);
+      el.innerHTML = sorted.length ? sorted.map(([kat, total]) =>
+        `<div class="ringkasan-item">
+          <span class="label">🏷️ ${kat}</span>
+          <span class="nilai minus">Rp ${total.toLocaleString('id-ID')}</span>
+        </div>`
+      ).join('') : '<div class="empty-state">Belum ada pengeluaran</div>';
+    }
+  }
+
+  // ── RENDER UTAMA ──
   function hitungDanRender() {
-    // Hitung saldo TOTAL (tidak terpengaruh filter)
-    let saldo = 0, totalPemasukan = 0, totalPengeluaran = 0;
+    let saldo=0, totalMasuk=0, totalKeluar=0;
+    const bulanIni = new Date().toISOString().substring(0,7);
+    let pengeluaranBulanIni = 0;
+    const pengeluaranPerKat = {};
+
     dataKeuangan.forEach(t => {
-      if (t.jenis === 'pemasukan') { saldo += t.jumlah; totalPemasukan += t.jumlah; }
-      else { saldo -= t.jumlah; totalPengeluaran += t.jumlah; }
+      if (t.jenis==='pemasukan') { saldo+=t.jumlah; totalMasuk+=t.jumlah; }
+      else {
+        saldo-=t.jumlah; totalKeluar+=t.jumlah;
+        if ((t.tanggalISO||'').startsWith(bulanIni)) pengeluaranBulanIni += t.jumlah;
+        const k = t.kategori || 'Lainnya';
+        pengeluaranPerKat[k] = (pengeluaranPerKat[k]||0) + t.jumlah;
+      }
     });
 
     document.getElementById('totalSaldo').textContent  = 'Rp ' + saldo.toLocaleString('id-ID');
-    document.getElementById('totalMasuk').textContent  = 'Rp ' + totalPemasukan.toLocaleString('id-ID');
-    document.getElementById('totalKeluar').textContent = 'Rp ' + totalPengeluaran.toLocaleString('id-ID');
-    dompetChart.data.datasets[0].data = [totalPemasukan, totalPengeluaran];
+    document.getElementById('totalMasuk').textContent  = 'Rp ' + totalMasuk.toLocaleString('id-ID');
+    document.getElementById('totalKeluar').textContent = 'Rp ' + totalKeluar.toLocaleString('id-ID');
+    document.getElementById('saldoBox').classList.toggle('minus', saldo<0);
+    dompetChart.data.datasets[0].data = [totalMasuk, totalKeluar];
     dompetChart.update();
-    document.getElementById('saldoBox').classList.toggle('sering-jajan', saldo < 0);
 
-    // Render LIST berdasarkan filter
-    const filtered = dataYangDifilter();
-    const listElement = document.getElementById('riwayatList');
-    listElement.innerHTML = '';
+    renderProgressBudget(pengeluaranBulanIni, pengeluaranPerKat);
+    renderRingkasan();
 
-    // Info filter aktif
-    const adaFilter = filterAktif.dari || filterAktif.sampai || filterAktif.jenis !== 'semua';
-    const infoEl = document.getElementById('filterInfo');
-    if (adaFilter) {
-      infoEl.textContent = `Menampilkan ${filtered.length} transaksi dari ${dataKeuangan.length} total`;
-    } else {
-      infoEl.textContent = '';
-    }
+    // Render list
+    const filtered = dataFiltered();
+    const listEl   = document.getElementById('riwayatList');
+    const adaFilter = filterAktif.dari||filterAktif.sampai||filterAktif.jenis!=='semua'||filterAktif.kategori!=='semua';
+    document.getElementById('filterInfo').textContent = adaFilter ? `Menampilkan ${filtered.length} dari ${dataKeuangan.length} transaksi` : '';
 
-    if (filtered.length === 0) {
-      listElement.innerHTML = '<div class="empty-filter">📭 Tidak ada transaksi ditemukan</div>';
-      return;
-    }
+    if (filtered.length===0) { listEl.innerHTML='<div class="empty-state">📭 Tidak ada transaksi ditemukan</div>'; return; }
 
-    // Tampilkan dari terbaru
-    [...filtered].reverse().forEach(t => {
-      const formatUang = t.jumlah.toLocaleString('id-ID');
-      const simbol = t.jenis === 'pemasukan' ? '+' : '-';
-      const kelasCSS = t.jenis === 'pemasukan' ? 'pemasukan' : 'pengeluaran';
-      listElement.innerHTML += `
-        <li class="item-transaksi ${kelasCSS}">
-          <div>
-            <strong>${t.nama}</strong><br>
-            <small style="color:#666;font-size:11px;">📅 ${t.tanggal}</small><br>
-            <small style="color:#888;font-weight:bold;">${simbol} Rp ${formatUang}</small>
-          </div>
-          <button class="hapus-btn" onclick="hapusTransaksi(${t.id})">❌</button>
-        </li>`;
+    listEl.innerHTML = [...filtered].reverse().map(t => {
+      const simbol = t.jenis==='pemasukan' ? '+' : '-';
+      const cls    = t.jenis==='pemasukan' ? 'pemasukan' : 'pengeluaran';
+      return `<li class="item-transaksi ${cls}">
+        <div>
+          <strong>${t.nama}</strong>
+          <span class="badge-kat">${t.kategori||'Lainnya'}</span><br>
+          <small style="color:#666;font-size:11px;">📅 ${t.tanggal}</small><br>
+          <small style="font-weight:bold;color:#888;">${simbol} Rp ${t.jumlah.toLocaleString('id-ID')}</small>
+        </div>
+        <button class="hapus-btn" onclick="hapusTransaksi(${t.id})">❌</button>
+      </li>`;
+    }).join('');
+  }
+
+  // ── EXPORT PDF ──
+  function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Laporan Keuangan', 14, 20);
+    doc.setFontSize(10);
+    doc.text('Diekspor: ' + new Date().toLocaleDateString('id-ID', {dateStyle:'long'}), 14, 28);
+
+    const filtered = dataFiltered();
+    const rows = [...filtered].reverse().map(t => [
+      t.tanggal, t.nama, t.kategori||'-',
+      t.jenis==='pemasukan'?'Pemasukan':'Pengeluaran',
+      'Rp ' + t.jumlah.toLocaleString('id-ID')
+    ]);
+
+    doc.autoTable({
+      startY: 34,
+      head: [['Tanggal','Nama','Kategori','Jenis','Jumlah']],
+      body: rows,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [49,147,217] }
     });
+
+    // Ringkasan
+    let totalMasuk=0, totalKeluar=0;
+    filtered.forEach(t => { if(t.jenis==='pemasukan') totalMasuk+=t.jumlah; else totalKeluar+=t.jumlah; });
+    const y = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(11);
+    doc.text(`Total Masuk  : Rp ${totalMasuk.toLocaleString('id-ID')}`,  14, y);
+    doc.text(`Total Keluar : Rp ${totalKeluar.toLocaleString('id-ID')}`, 14, y+7);
+    doc.text(`Saldo Bersih : Rp ${(totalMasuk-totalKeluar).toLocaleString('id-ID')}`, 14, y+14);
+
+    doc.save('laporan-keuangan.pdf');
+  }
+
+  // ── EXPORT EXCEL ──
+  function exportExcel() {
+    const filtered = dataFiltered();
+    const rows = [...filtered].reverse().map(t => ({
+      Tanggal:   t.tanggal,
+      Nama:      t.nama,
+      Kategori:  t.kategori || '-',
+      Jenis:     t.jenis==='pemasukan' ? 'Pemasukan' : 'Pengeluaran',
+      Jumlah:    t.jumlah
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Laporan');
+    XLSX.writeFile(wb, 'laporan-keuangan.xlsx');
   }
 </script>
 </body>
