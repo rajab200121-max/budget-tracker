@@ -13,11 +13,13 @@
     body { background-color: #3193d9ff; padding: 20px; display: flex; justify-content: center; }
     .container { width: 100%; max-width: 480px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
     h2 { text-align: center; margin-bottom: 20px; color: #333; }
+    h4 { text-align: center; margin-bottom: 5px; color: #a3e016ff; }
+    
 
     /* SALDO */
     .saldo-box { background: #2ecc71; color: white; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px; }
     .saldo-box.minus { background: #e74c3c; }
-    .saldo-box h3 { font-size: 28px; margin-top: 5px; }
+    .saldo-box h3 { font-size: 28px; margin-top: 5px; color: #ebebebff }
     .detail-box { display: flex; gap: 10px; margin-bottom: 20px; }
     .sub-box { flex: 1; padding: 10px; border-radius: 8px; color: white; text-align: center; }
     .sub-box p { font-size: 12px; opacity: 0.9; }
@@ -90,20 +92,63 @@
     .btn-excel { flex:1; background: #27ae60; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; }
     .btn-pdf:hover, .btn-excel:hover { opacity: 0.88; }
 
-    /* LIST */
-    h4.riwayat-title { margin-bottom: 10px; color: #555; }
-    .list-transaksi { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .item-transaksi { display: flex; justify-content: space-between; padding: 11px 12px; border-radius: 8px; background: #f9f9f9; border-left: 5px solid #2ecc71; }
+    /* ── RIWAYAT PER HARI ── */
+    .riwayat-harian { margin-top: 5px; }
+    .riwayat-harian-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .riwayat-harian-header h4 { color: #555; font-size: 14px; }
+
+    /* View toggle */
+    .view-toggle { display: flex; gap: 4px; }
+    .vt-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid #ddd; background: white; font-size: 11px; cursor: pointer; color: #666; font-weight: bold; width: auto; }
+    .vt-btn.active { background: #3498db; color: white; border-color: #3498db; }
+
+    /* Day group */
+    .day-group { border: 1px solid #eee; border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+    .day-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 13px; cursor: pointer; background: #f8f9fa; user-select: none; }
+    .day-header:hover { background: #f0f0f0; }
+    .day-header-left { display: flex; flex-direction: column; gap: 2px; }
+    .day-title { font-size: 13px; font-weight: bold; color: #333; }
+    .day-subtitle { font-size: 11px; color: #888; }
+    .day-header-right { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .day-badge { font-size: 11px; padding: 3px 8px; border-radius: 100px; font-weight: bold; white-space: nowrap; }
+    .day-badge.masuk { background: #e8f5e9; color: #27ae60; }
+    .day-badge.keluar { background: #fce8e8; color: #e74c3c; }
+    .day-badge.net-plus { background: #e3f2fd; color: #1565c0; }
+    .day-badge.net-minus { background: #fce4ec; color: #b71c1c; }
+    .chevron { font-size: 11px; color: #aaa; margin-left: 4px; transition: transform 0.2s; display: inline-block; }
+    .chevron.open { transform: rotate(180deg); }
+
+    /* Day items */
+    .day-items { display: none; padding: 8px 10px; background: white; border-top: 1px solid #f0f0f0; flex-direction: column; gap: 6px; }
+    .day-items.open { display: flex; }
+
+    /* Day summary bar */
+    .day-summary { display: flex; gap: 12px; padding: 7px 13px; background: #fffde7; border-top: 1px solid #fff9c4; font-size: 11px; color: #888; flex-wrap: wrap; }
+    .day-summary span { font-weight: bold; color: #555; }
+
+    /* Transaction item */
+    .item-transaksi { display: flex; justify-content: space-between; align-items: center; padding: 9px 11px; border-radius: 8px; background: #f9f9f9; border-left: 4px solid #2ecc71; }
     .item-transaksi.pengeluaran { border-left-color: #e74c3c; }
-    .hapus-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; padding: 0; width: auto; }
-    .hapus-btn:hover { color: #e74c3c; background: none; }
-    .badge-kat { display: inline-block; background: #e8f5e9; color: #27ae60; font-size: 10px; padding: 2px 7px; border-radius: 100px; margin-top: 2px; }
+    .item-left { display: flex; flex-direction: column; gap: 3px; }
+    .item-name { font-size: 13px; font-weight: bold; color: #333; }
+    .item-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .badge-kat { display: inline-block; background: #e8f5e9; color: #27ae60; font-size: 10px; padding: 2px 7px; border-radius: 100px; }
+    .item-time { font-size: 11px; color: #aaa; }
+    .item-right { display: flex; align-items: center; gap: 8px; }
+    .item-amount { font-size: 13px; font-weight: bold; }
+    .item-amount.plus { color: #2ecc71; }
+    .item-amount.minus { color: #e74c3c; }
+    .hapus-btn { background: none; border: none; color: #ccc; cursor: pointer; font-size: 15px; padding: 0 3px; width: auto; }
+    .hapus-btn:hover { color: #e74c3c; }
+
     .empty-state { text-align: center; padding: 20px; color: #aaa; font-size: 14px; }
   </style>
 </head>
 <body>
 <div class="container">
-  <h2>Budget Tracker 💰</h2>
+  <h2>Catatan keuangan 💰</h2>
+  <h4>BY Luthfi rajab</h4>
+  
 
   <!-- SALDO -->
   <div class="saldo-box" id="saldoBox">
@@ -195,9 +240,19 @@
     <button class="btn-excel" onclick="exportExcel()">📊 Export Excel</button>
   </div>
 
-  <!-- RIWAYAT -->
-  <h4 class="riwayat-title">Riwayat Keuangan</h4>
-  <ul class="list-transaksi" id="riwayatList"></ul>
+  <!-- RIWAYAT PER HARI -->
+  <div class="riwayat-harian">
+    <div class="riwayat-harian-header">
+      <h4>📅 Riwayat Per Hari</h4>
+      <div class="view-toggle">
+        <button class="vt-btn active" id="vt-all"   onclick="setViewMode('all')">Semua</button>
+        <button class="vt-btn"        id="vt-week"  onclick="setViewMode('week')">7 Hari</button>
+        <button class="vt-btn"        id="vt-month" onclick="setViewMode('month')">Bulan Ini</button>
+      </div>
+    </div>
+    <div id="riwayatHarianList"></div>
+  </div>
+
 </div>
 
 <script>
@@ -207,6 +262,8 @@
   let budgetData   = JSON.parse(localStorage.getItem('budgetData'))   || { bulan: 0, kategori: {} };
   let filterAktif  = { dari:'', sampai:'', jenis:'semua', kategori:'semua' };
   let tabAktif     = 'bulan';
+  let viewMode     = 'all';
+  let expandedDays = new Set();
   let dompetChart;
 
   // ── INIT ──
@@ -272,7 +329,6 @@
 
   function renderProgressBudget(totalPengeluaranBulanIni, pengeluaranPerKat) {
     let html = '';
-
     if (budgetData.bulan > 0) {
       const pct = Math.min(Math.round((totalPengeluaranBulanIni / budgetData.bulan) * 100), 100);
       const cls = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : '';
@@ -283,7 +339,6 @@
           ${pct >= 90 ? '<p style="color:#e74c3c;font-size:11px;margin-top:4px;">⚠️ Hampir melebihi batas budget!</p>' : ''}
         </div>`;
     }
-
     Object.entries(budgetData.kategori).forEach(([kat, limit]) => {
       const used = pengeluaranPerKat[kat] || 0;
       const pct  = Math.min(Math.round((used / limit) * 100), 100);
@@ -294,7 +349,6 @@
           <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>
         </div>`;
     });
-
     document.getElementById('progressBudget').innerHTML = html;
   }
 
@@ -310,6 +364,7 @@
     dataKeuangan.push({
       id: Date.now(), nama, jumlah, jenis, kategori: kat,
       tanggalISO: now.toISOString().split('T')[0],
+      tanggalTS: now.toISOString(),
       tanggal: now.toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })
     });
 
@@ -346,12 +401,27 @@
   function dataFiltered() {
     return dataKeuangan.filter(t => {
       const tgl = t.tanggalISO || '';
-      if (filterAktif.dari     && tgl < filterAktif.dari)             return false;
-      if (filterAktif.sampai   && tgl > filterAktif.sampai)           return false;
-      if (filterAktif.jenis    !== 'semua' && t.jenis !== filterAktif.jenis) return false;
+      if (filterAktif.dari     && tgl < filterAktif.dari)                          return false;
+      if (filterAktif.sampai   && tgl > filterAktif.sampai)                        return false;
+      if (filterAktif.jenis    !== 'semua' && t.jenis !== filterAktif.jenis)       return false;
       if (filterAktif.kategori !== 'semua' && t.kategori !== filterAktif.kategori) return false;
       return true;
     });
+  }
+
+  // ── VIEW MODE (riwayat harian) ──
+  function setViewMode(mode) {
+    viewMode = mode;
+    ['all','week','month'].forEach(m => {
+      document.getElementById('vt-' + m).classList.toggle('active', m === mode);
+    });
+    renderRiwayatHarian();
+  }
+
+  function toggleDay(tgl) {
+    if (expandedDays.has(tgl)) expandedDays.delete(tgl);
+    else expandedDays.add(tgl);
+    renderRiwayatHarian();
   }
 
   // ── RINGKASAN ──
@@ -399,6 +469,118 @@
     }
   }
 
+  // ── RIWAYAT PER HARI ──
+  function getDataUntukHarian() {
+    const today = new Date().toISOString().split('T')[0];
+    return dataKeuangan.filter(t => {
+      const tgl = t.tanggalISO || '';
+      if (filterAktif.dari     && tgl < filterAktif.dari)                          return false;
+      if (filterAktif.sampai   && tgl > filterAktif.sampai)                        return false;
+      if (filterAktif.jenis    !== 'semua' && t.jenis !== filterAktif.jenis)       return false;
+      if (filterAktif.kategori !== 'semua' && t.kategori !== filterAktif.kategori) return false;
+      if (viewMode === 'week') {
+        const d7 = new Date(); d7.setDate(d7.getDate() - 6);
+        if (tgl < d7.toISOString().split('T')[0]) return false;
+      }
+      if (viewMode === 'month') {
+        if (tgl.substring(0, 7) !== today.substring(0, 7)) return false;
+      }
+      return true;
+    });
+  }
+
+  function fmtTanggalHari(iso) {
+    const today     = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const d = new Date(iso + 'T00:00:00');
+    const label = d.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    if (iso === today)     return '🟢 Hari ini — ' + label;
+    if (iso === yesterday) return '🕐 Kemarin — ' + label;
+    return '📅 ' + label;
+  }
+
+  function fmtJam(ts) {
+    if (!ts) return '';
+    return new Date(ts).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function renderRiwayatHarian() {
+    const filtered = getDataUntukHarian();
+    const listEl   = document.getElementById('riwayatHarianList');
+
+    // Group by day
+    const byDay = {};
+    filtered.forEach(t => {
+      const tgl = t.tanggalISO || 'unknown';
+      if (!byDay[tgl]) byDay[tgl] = { masuk:0, keluar:0, items:[] };
+      if (t.jenis === 'pemasukan') byDay[tgl].masuk += t.jumlah;
+      else byDay[tgl].keluar += t.jumlah;
+      byDay[tgl].items.push(t);
+    });
+
+    const days = Object.keys(byDay).sort((a,b) => b.localeCompare(a));
+
+    if (!days.length) {
+      listEl.innerHTML = '<div class="empty-state">📭 Tidak ada transaksi ditemukan</div>';
+      return;
+    }
+
+    listEl.innerHTML = days.map(tgl => {
+      const d    = byDay[tgl];
+      const net  = d.masuk - d.keluar;
+      const open = expandedDays.has(tgl);
+      const items = [...d.items].sort((a,b) => (b.tanggalTS||'').localeCompare(a.tanggalTS||''));
+
+      const netBadgeCls = net >= 0 ? 'net-plus' : 'net-minus';
+      const netSign     = net >= 0 ? '+' : '';
+
+      const itemsHtml = items.map(t => {
+        const simbol = t.jenis === 'pemasukan' ? '+' : '-';
+        const cls    = t.jenis === 'pemasukan' ? 'pemasukan' : 'pengeluaran';
+        const amtCls = t.jenis === 'pemasukan' ? 'plus' : 'minus';
+        return `<div class="item-transaksi ${cls}">
+          <div class="item-left">
+            <span class="item-name">${t.nama}</span>
+            <div class="item-meta">
+              <span class="badge-kat">${t.kategori || 'Lainnya'}</span>
+              <span class="item-time">${fmtJam(t.tanggalTS)}</span>
+            </div>
+          </div>
+          <div class="item-right">
+            <span class="item-amount ${amtCls}">${simbol} Rp ${t.jumlah.toLocaleString('id-ID')}</span>
+            <button class="hapus-btn" onclick="hapusTransaksi(${t.id})">❌</button>
+          </div>
+        </div>`;
+      }).join('');
+
+      const summaryHtml = `
+        <div class="day-summary">
+          <span>Masuk: <span>Rp ${d.masuk.toLocaleString('id-ID')}</span></span>
+          <span>Keluar: <span>Rp ${d.keluar.toLocaleString('id-ID')}</span></span>
+          <span>Net: <span style="color:${net>=0?'#27ae60':'#e74c3c'}">${netSign}Rp ${Math.abs(net).toLocaleString('id-ID')}</span></span>
+        </div>`;
+
+      return `<div class="day-group">
+        <div class="day-header" onclick="toggleDay('${tgl}')">
+          <div class="day-header-left">
+            <span class="day-title">${fmtTanggalHari(tgl)}</span>
+            <span class="day-subtitle">${items.length} transaksi</span>
+          </div>
+          <div class="day-header-right">
+            ${d.masuk  > 0 ? `<span class="day-badge masuk">+Rp ${d.masuk.toLocaleString('id-ID')}</span>` : ''}
+            ${d.keluar > 0 ? `<span class="day-badge keluar">-Rp ${d.keluar.toLocaleString('id-ID')}</span>` : ''}
+            <span class="day-badge ${netBadgeCls}">${netSign}Rp ${Math.abs(net).toLocaleString('id-ID')}</span>
+            <span class="chevron ${open ? 'open' : ''}">▼</span>
+          </div>
+        </div>
+        ${open ? summaryHtml : ''}
+        <div class="day-items ${open ? 'open' : ''}">
+          ${itemsHtml}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
   // ── RENDER UTAMA ──
   function hitungDanRender() {
     let saldo=0, totalMasuk=0, totalKeluar=0;
@@ -426,27 +608,11 @@
     renderProgressBudget(pengeluaranBulanIni, pengeluaranPerKat);
     renderRingkasan();
 
-    // Render list
     const filtered = dataFiltered();
-    const listEl   = document.getElementById('riwayatList');
     const adaFilter = filterAktif.dari||filterAktif.sampai||filterAktif.jenis!=='semua'||filterAktif.kategori!=='semua';
     document.getElementById('filterInfo').textContent = adaFilter ? `Menampilkan ${filtered.length} dari ${dataKeuangan.length} transaksi` : '';
 
-    if (filtered.length===0) { listEl.innerHTML='<div class="empty-state">📭 Tidak ada transaksi ditemukan</div>'; return; }
-
-    listEl.innerHTML = [...filtered].reverse().map(t => {
-      const simbol = t.jenis==='pemasukan' ? '+' : '-';
-      const cls    = t.jenis==='pemasukan' ? 'pemasukan' : 'pengeluaran';
-      return `<li class="item-transaksi ${cls}">
-        <div>
-          <strong>${t.nama}</strong>
-          <span class="badge-kat">${t.kategori||'Lainnya'}</span><br>
-          <small style="color:#666;font-size:11px;">📅 ${t.tanggal}</small><br>
-          <small style="font-weight:bold;color:#888;">${simbol} Rp ${t.jumlah.toLocaleString('id-ID')}</small>
-        </div>
-        <button class="hapus-btn" onclick="hapusTransaksi(${t.id})">❌</button>
-      </li>`;
-    }).join('');
+    renderRiwayatHarian();
   }
 
   // ── EXPORT PDF ──
@@ -473,7 +639,6 @@
       headStyles: { fillColor: [49,147,217] }
     });
 
-    // Ringkasan
     let totalMasuk=0, totalKeluar=0;
     filtered.forEach(t => { if(t.jenis==='pemasukan') totalMasuk+=t.jumlah; else totalKeluar+=t.jumlah; });
     const y = doc.lastAutoTable.finalY + 10;
